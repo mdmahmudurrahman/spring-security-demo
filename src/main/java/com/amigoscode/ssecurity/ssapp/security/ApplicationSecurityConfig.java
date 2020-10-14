@@ -3,6 +3,7 @@ package com.amigoscode.ssecurity.ssapp.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -24,9 +25,15 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
 	
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		http.authorizeRequests()
+		http
+			.csrf().disable()
+			.authorizeRequests()
 			.antMatchers("/", "index", "/css/*", "/js/*").permitAll()
 			.antMatchers("/api/**").hasRole(ApplicationUserRole.STUDENT.name())
+			.antMatchers(HttpMethod.DELETE, "management/api/**").hasAuthority(ApplicationUserPermission.COURSE_WRITE.getPermission())
+			.antMatchers(HttpMethod.POST, "management/api/**").hasAuthority(ApplicationUserPermission.COURSE_WRITE.getPermission())
+			.antMatchers(HttpMethod.PUT, "management/api/**").hasAuthority(ApplicationUserPermission.COURSE_WRITE.getPermission())
+			.antMatchers(HttpMethod.GET, "management/api/**").hasAnyRole(ApplicationUserRole.ADMIN.name(), ApplicationUserRole.ADMINTRAINEE.name())
 			.anyRequest()
 			.authenticated()
 			.and()
@@ -36,18 +43,27 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Override
 	@Bean
 	protected UserDetailsService userDetailsService() {
-		UserDetails user1 = User.builder()
+		UserDetails userStudent = User.builder()
 								.username("user1")
-								.password(passwordEncoder.encode("password1"))
-								.roles(ApplicationUserRole.STUDENT.name()) // ROLE_STUDENT
+								.password(passwordEncoder.encode("password"))
+//								.roles(ApplicationUserRole.STUDENT.name()) // ROLE_STUDENT
+								.authorities(ApplicationUserRole.STUDENT.getGrantedAuthorities())
 								.build();
 		
-		UserDetails user2 = User.builder()
-			.username("user2")
-			.password(passwordEncoder.encode("password2"))
-			.roles(ApplicationUserRole.ADMIN.name())
-			.build();
+		UserDetails userAdmin = User.builder()
+								.username("user2")
+								.password(passwordEncoder.encode("password"))
+//								.roles(ApplicationUserRole.ADMIN.name())
+								.authorities(ApplicationUserRole.ADMIN.getGrantedAuthorities())
+								.build();
 		
-		return new InMemoryUserDetailsManager(user1, user2);
+		UserDetails userAdminTrainee = User.builder()
+								.username("user3")
+								.password(passwordEncoder.encode("password"))
+//								.roles(ApplicationUserRole.ADMINTRAINEE.name())
+								.authorities(ApplicationUserRole.ADMINTRAINEE.getGrantedAuthorities())
+								.build();
+		
+		return new InMemoryUserDetailsManager(userStudent, userAdmin, userAdminTrainee);
 	}
 }
