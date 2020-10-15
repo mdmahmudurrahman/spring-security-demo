@@ -28,18 +28,19 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http
-			.csrf().disable()
+//			.csrf().disable()
 			.authorizeRequests()
 			.antMatchers("/", "index", "/css/*", "/js/*").permitAll()
 			.antMatchers("/api/**").hasRole(ApplicationUserRole.STUDENT.name())
-			.antMatchers(HttpMethod.DELETE, "management/api/**").hasAuthority(ApplicationUserPermission.COURSE_WRITE.getPermission())
-			.antMatchers(HttpMethod.POST, "management/api/**").hasAuthority(ApplicationUserPermission.COURSE_WRITE.getPermission())
-			.antMatchers(HttpMethod.PUT, "management/api/**").hasAuthority(ApplicationUserPermission.COURSE_WRITE.getPermission())
-			.antMatchers(HttpMethod.GET, "management/api/**").hasAnyRole(ApplicationUserRole.ADMIN.name(), ApplicationUserRole.ADMINTRAINEE.name())
+//			.antMatchers(HttpMethod.DELETE, "management/api/**").hasAuthority(ApplicationUserPermission.COURSE_WRITE.getPermission())
+//			.antMatchers(HttpMethod.POST, "management/api/**").hasAuthority(ApplicationUserPermission.COURSE_WRITE.getPermission())
+//			.antMatchers(HttpMethod.PUT, "management/api/**").hasAuthority(ApplicationUserPermission.COURSE_WRITE.getPermission())
+//			.antMatchers(HttpMethod.GET, "management/api/**").hasAnyRole(ApplicationUserRole.ADMIN.name(), ApplicationUserRole.ADMINTRAINEE.name())
 			.anyRequest()
 			.authenticated()
 			.and()
-			.httpBasic();
+			.formLogin()
+			.loginPage("/login-form").permitAll();
 	}			
 
 	@Override
